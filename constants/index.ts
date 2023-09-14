@@ -1,0 +1,1 @@
+export const ALBUM_NAME = 'Small_Private_Camera_Photos';

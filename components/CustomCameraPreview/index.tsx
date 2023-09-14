@@ -1,28 +1,24 @@
-import { View, ImageBackground, TouchableOpacity, Text } from "react-native"
+import { View, ImageBackground, TouchableOpacity, Text } from "react-native";
+import { CameraCapturedPicture } from 'expo-camera/build/Camera.types';
+import Styles from '../../styles';
 
-const CustomCameraPreview = ({photo, retakePicture, savePhoto}: any) => {
+export type CustomCameraProps = {
+  photo: CameraCapturedPicture;
+  retakePicture: () => void;
+  savePhoto: () => void;
+};
+
+export default function CustomCameraPreview ({photo, retakePicture, savePhoto}: CustomCameraProps) {
   return (
     <View
-      style={{
-        backgroundColor: 'transparent',
-        flex: 1,
-        width: '100%',
-        height: '100%'
-      }}
+      style={Styles.cameraPreviewContainer}
     >
       <ImageBackground
         source={{uri: photo && photo.uri}}
-        style={{
-          flex: 1
-        }}
+        style={Styles.flexOneWrapper}
       >
         <View
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            padding: 15,
-            justifyContent: 'flex-end'
-          }}
+          style={Styles.cameraPreviewButtonsContainer}
         >
           <View
             style={{
@@ -32,46 +28,22 @@ const CustomCameraPreview = ({photo, retakePicture, savePhoto}: any) => {
           >
             <TouchableOpacity
               onPress={retakePicture}
-              style={{
-                width: 130,
-                height: 40,
-                backgroundColor: '#14274e',
-                alignItems: 'center',
-                borderRadius: 30,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center'
-              }}
+              style={Styles.cameraPreviewButton}
             >
               <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 20
-                }}
+                style={Styles.cameraPreviewButtonText}
               >
                 Re-take
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={savePhoto}
-              style={{
-                width: 130,
-                height: 40,
-                backgroundColor: '#14274e',
-                alignItems: 'center',
-                borderRadius: 30,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center'
-              }}
+              style={Styles.cameraPreviewButton}
             >
               <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 20
-                }}
+                style={Styles.cameraPreviewButtonText}
               >
-                save photo
+                Save photo
               </Text>
             </TouchableOpacity>
           </View>
@@ -79,6 +51,4 @@ const CustomCameraPreview = ({photo, retakePicture, savePhoto}: any) => {
       </ImageBackground>
     </View>
   )
-}
-
-export default CustomCameraPreview;
+};

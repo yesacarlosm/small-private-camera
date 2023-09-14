@@ -1,9 +1,9 @@
-import { Camera, CameraType, FlashMode, PermissionResponse, PermissionStatus } from "expo-camera";
-import { useRef, useState } from "react";
-import { View, TouchableOpacity, Alert, Text } from "react-native";
+import { Camera, CameraCapturedPicture, CameraType, FlashMode } from "expo-camera";
+import { useRef } from "react";
+import { View, TouchableOpacity, Text } from "react-native";
 import CustomCameraPreview from "../CustomCameraPreview";
-import React from "react";
-import { useCameraCaptured, useCameraPreview, useCameraStarted, useCameraType, useFlashMode } from "../../hooks";
+import { useAssets, useCameraCaptured, useCameraPreview, useCameraStarted, useCameraType, useFlashMode } from "../../hooks";
+import Styles from '../../styles';
 
 export type CustomCameraProps = {
   startRNCamera: () => void;
@@ -11,23 +11,36 @@ export type CustomCameraProps = {
 
 export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
   const cameraRef = useRef<Camera | null>(null);
-  const [cameraStarted, setCameraStarted] = useCameraStarted();
-  const [cameraPreview, setCameraPreview] = useCameraPreview();
-  const [capturedPicture, setCapturedPicture] = useCameraCaptured();
-  const [cameraType, setCameraType] = useCameraType();
-  const [flashMode, setFlashMode] = useFlashMode();
+  const {setCameraStarted} = useCameraStarted();
+  const {cameraPreview, setCameraPreview} = useCameraPreview();
+  const {capturedPicture, setCapturedPicture} = useCameraCaptured();
+  const {cameraType, setCameraType} = useCameraType();
+  const {flashMode, setFlashMode} = useFlashMode();
+  const {setAssets} = useAssets();
 
   const takePicture = async () => {
-    const photo: any = await cameraRef?.current?.takePictureAsync();
-    setCameraPreview(true);
-    setCapturedPicture(photo);
+    const photo: CameraCapturedPicture | undefined = await cameraRef?.current?.takePictureAsync();
+    if (photo) {
+      setCameraPreview(true);
+      setCapturedPicture(photo);
+    }
   }
-  const savePhoto = () => { }
+
+  const savePhoto = async () => {
+    if (capturedPicture) {
+      setAssets(prevState => ([...prevState, capturedPicture]));
+      setCapturedPicture(null);
+      setCameraPreview(false);
+      setCameraStarted(false);
+    }
+  }
+
   const retakePicture = () => {
     setCapturedPicture(null);
     setCameraPreview(false);
     startRNCamera();
   }
+
   const handleFlashMode = () => {
     if (flashMode === FlashMode.on) {
       setFlashMode(FlashMode.off)
@@ -37,6 +50,7 @@ export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
       setFlashMode(FlashMode.auto)
     }
   }
+
   const switchCamera = () => {
     if (cameraType === CameraType.back) {
       setCameraType(CameraType.front)
@@ -47,10 +61,7 @@ export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
 
   return (
     <View
-      style={{
-        flex: 1,
-        width: '100%'
-      }}
+      style={Styles.customCameraContainer}
     >
       {cameraPreview && capturedPicture ? (
         <CustomCameraPreview photo={capturedPicture} savePhoto={savePhoto} retakePicture={retakePicture} />
@@ -58,39 +69,24 @@ export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
         <Camera
           type={cameraType}
           flashMode={flashMode}
-          style={{ flex: 1 }}
+          style={Styles.flexOneWrapper}
           ref={(ref) => cameraRef.current = ref}
         >
           <View
-            style={{
-              flex: 1,
-              width: '100%',
-              backgroundColor: 'transparent',
-              flexDirection: 'row'
-            }}
+            style={Styles.customCameraView}
           >
             <View
-              style={{
-                position: 'absolute',
-                left: '90%',
-                top: '10%',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}
+              style={Styles.customCameraButtonsContainer}
             >
               <TouchableOpacity
                 onPress={handleFlashMode}
                 style={{
                   backgroundColor: flashMode === FlashMode.off ? '#000' : '#fff',
-                  borderRadius: 30,
-                  height: 30,
-                  width: 30
+                  ...Styles.customCameraButtonContainer,
                 }}
               >
                 <Text
-                  style={{
-                    fontSize: 25
-                  }}
+                  style={Styles.customCameraButtonText}
                 >
                   🔦
                 </Text>
@@ -99,47 +95,25 @@ export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
                 onPress={switchCamera}
                 style={{
                   marginTop: 20,
-                  borderRadius: 30,
-                  height: 30,
-                  width: 30
+                  ...Styles.customCameraButtonContainer,
                 }}
               >
                 <Text
-                  style={{
-                    fontSize: 25
-                  }}
+                  style={Styles.customCameraButtonText}
                 >
                   🔄
                 </Text>
               </TouchableOpacity>
             </View>
             <View
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                flexDirection: 'row',
-                flex: 1,
-                width: '100%',
-                padding: 20,
-                justifyContent: 'space-between'
-              }}
+              style={Styles.customCameraTakePhotoButtonContainer}
             >
               <View
-                style={{
-                  alignSelf: 'center',
-                  flex: 1,
-                  alignItems: 'center'
-                }}
+                style={Styles.customCameraTakePhotoButtonOrientation}
               >
                 <TouchableOpacity
                   onPress={takePicture}
-                  style={{
-                    width: 70,
-                    height: 70,
-                    bottom: 0,
-                    borderRadius: 50,
-                    backgroundColor: '#fff'
-                  }}
+                  style={Styles.customCameraTakePhotoButton}
                 />
               </View>
             </View>
@@ -148,4 +122,4 @@ export default function CustomCamera({ startRNCamera }: CustomCameraProps) {
       )}
     </View>
   )
-}
+};

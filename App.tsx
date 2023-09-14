@@ -1,67 +1,74 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {StatusBar} from 'expo-status-bar'
-import React from 'react'
-import {StyleSheet, Text, View, TouchableOpacity, Alert} from 'react-native'
-import {Camera, PermissionResponse, PermissionStatus} from 'expo-camera'
+import React, { useEffect } from 'react';
+import { SafeAreaView, View, Alert, FlatList, Image} from 'react-native';
+import {Camera, PermissionResponse, PermissionStatus} from 'expo-camera';
 import CustomCamera from './components/CustomCamera';
-import { useCameraStarted } from './hooks';
+import { useCameraStarted, useAssets } from './hooks';
+import { ALBUM_NAME } from './constants';
+import TakePicture from './components/TakePicture';
+import Styles from './styles';
 
 export default function App() {
-  const [cameraStarted, setCameraStarted] = useCameraStarted();
+  const {cameraStarted, setCameraStarted} = useCameraStarted();
+  const {assets, setAssets} = useAssets();
+
+  useEffect(() => {
+    AsyncStorage.getItem(ALBUM_NAME)
+      .then(item => {
+        const value = item ? JSON.parse(item) : [];
+        setAssets(value);
+      }, (err) => console.log(err))
+  }, []);
+
+  useEffect(() => {
+    if (assets && assets.length) {
+      AsyncStorage.setItem(ALBUM_NAME, JSON.stringify(assets));
+    }
+  }, [assets]);
 
   const startRNCamera = async () => {
     const { status }: Partial<PermissionResponse> = await Camera.requestCameraPermissionsAsync();
     if (status === PermissionStatus.GRANTED) {
-      setCameraStarted(true)
+      setCameraStarted(true);
     } else {
-      Alert.alert('Access denied')
+      Alert.alert('Access denied');
     }
   }
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={Styles.container}>
       {cameraStarted ? (
         <CustomCamera startRNCamera={startRNCamera}/>
       ) : (
         <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignContent: 'center',
-          }}
+          style={Styles.galleryContainer}
         >
-          <TouchableOpacity
-            onPress={startRNCamera}
-            style={{
-              padding: 10,
-              borderRadius: 4,
-              backgroundColor: '#14274e',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 40,
-              top: '80%',
+          <FlatList
+            data={assets}
+            renderItem={({item}) => (
+              <Image
+                source={{ uri: item?.uri }}
+                style={{
+                  minWidth: 200,
+                  minHeight: 200,
+                  maxWidth: 400,
+                  maxHeight: 400,
+                  marginBottom: 5,
+                }}
+              />
+            )}
+            keyExtractor={(item) => {
+              const uriParts = item?.uri.split('/');
+              return uriParts ? uriParts[uriParts.length-1] : '';
             }}
-          >
-            <Text
-              style={{
-                color: '#fff',
-                fontWeight: 'bold',
-                textAlign: 'center'
-              }}
-            >
-              Take picture
-            </Text>
-          </TouchableOpacity>
+          />
+          <TakePicture
+            startRNCamera={startRNCamera}
+            style={Styles.takePictureButton}
+          />
         </View>
       )}
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaView>
   )
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  }
-});
+};
