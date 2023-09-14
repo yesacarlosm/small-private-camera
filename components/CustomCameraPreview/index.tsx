@@ -15,6 +15,7 @@ export default function CustomCameraPreview ({photo, retakePicture, savePhoto}: 
     >
       <ImageBackground
         source={{uri: photo && photo.uri}}
+        resizeMode='contain'
         style={Styles.flexOneWrapper}
       >
         <View

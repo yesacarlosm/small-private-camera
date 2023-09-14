@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -43,7 +43,7 @@ export default StyleSheet.create({
     width: 30
   },
   customCameraButtonText: {
-    fontSize: 25
+    fontSize: Platform.OS === 'ios' ? 25 : 18,
   },
   customCameraTakePhotoButtonContainer: {
     position: 'absolute',
@@ -79,8 +79,10 @@ export default StyleSheet.create({
     justifyContent: 'flex-end'
   },
   cameraPreviewButton: {
-    width: 130,
-    height: 40,
+    width: 'auto',
+    height: 'auto',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     backgroundColor: '#14274e',
     alignItems: 'center',
     borderRadius: 30,

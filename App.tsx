@@ -45,18 +45,23 @@ export default function App() {
         >
           <FlatList
             data={assets}
-            renderItem={({item}) => (
-              <Image
-                source={{ uri: item?.uri }}
-                style={{
-                  minWidth: 200,
-                  minHeight: 200,
-                  maxWidth: 400,
-                  maxHeight: 400,
-                  marginBottom: 5,
-                }}
-              />
-            )}
+            renderItem={({item}) => {
+              const maxWidth = item?.width ?  item.width / 3 : 400;
+              const maxHeight = item?.height ?  item.height / 3 : 400;
+              return (
+                <Image
+                  source={{ uri: item?.uri }}
+                  resizeMode='contain'
+                  style={{
+                    minWidth: 200,
+                    minHeight: 250,
+                    maxWidth: maxWidth,
+                    maxHeight: maxHeight,
+                    marginBottom: 5,
+                  }}
+                />
+              )
+            }}
             keyExtractor={(item) => {
               const uriParts = item?.uri.split('/');
               return uriParts ? uriParts[uriParts.length-1] : '';
